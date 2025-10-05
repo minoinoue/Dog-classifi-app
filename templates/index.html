@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhận diện giống chó</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3d5af1;
+            --primary-hover: #304ffe;
+            --success-color: #00c853;
+            --text-color: #333;
+            --light-text: #555;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f6f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #background-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1.5s ease-in-out;
+        }
+
+        #background-slideshow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .container h1 {
+            color: var(--text-color);
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .container p {
+            color: var(--light-text);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+        }
+
+        .file-upload-wrapper:hover .file-upload-label {
+            border-color: var(--primary-color);
+            background-color: rgba(255,255,255,0.7);
+        }
+
+        .file-upload-label svg {
+            width: 40px;
+            height: 40px;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+        #file-upload { display: none; }
+        .file-upload-label span { color: var(--text-color); font-weight: 600; }
+        #image-preview { margin-top: 1.5rem; max-height: 250px; width: 100%; display: none; }
+        #image-preview img { max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid var(--border-color); }
+
+        button { background: linear-gradient(45deg, var(--primary-color), var(--primary-hover)); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(61, 90, 241, 0.3); width: 100%; margin-top: 1rem; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61, 90, 241, 0.4); }
+
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 1rem auto 0; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .result { margin-top: 1.5rem; animation: fadeIn 0.5s ease-in-out; }
+        .result h2 { color: #008f2e; font-weight: 700; word-wrap: break-word; font-size: 1.3rem; }
+        .result h2 strong { color: #00601f; }
+        .result img { max-width: 100%; border-radius: 12px; margin-top: 1rem; border: 1px solid var(--border-color); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .error { color: #dc3545; }
+
+        footer {
+            width: 100%;
+            padding: 20px 15px;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            text-align: center;
+            color: #444;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .footer-content p {
+            margin: 5px 0;
+            line-height: 1.6;
+            font-size: 0.85rem;
+        }
+        .footer-content .tech-stack {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .footer-content .tech-stack a {
+            color: var(--light-text);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .footer-content .tech-stack a:hover {
+            color: var(--primary-color);
+        }
+        .footer-content .members {
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        .footer-content .copyright {
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        .footer-content .copyright a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-content .copyright a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="background-slideshow"></div>
+
+    <div class="content-wrapper">
+        <div class="container">
+            <h1>🐕 Trình nhận diện giống chó từ ảnh</h1>
+            <p>Tải lên một bức ảnh để mô hình dự đoán đó là giống chó gì.</p>
+
+            <form id="upload-form" method="post" enctype="multipart/form-data">
+                <div class="file-upload-wrapper">
+                    <label for="file-upload" class="file-upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        <span id="file-name">Nhấn để chọn ảnh</span>
+                    </label>
+                    <input type="file" id="file-upload" name="file" accept="image/jpeg, image/png, image/jpg" required>
+                </div>
+                <div id="image-preview"></div>
+                <button id="submit-btn" type="submit">Dự đoán</button>
+                <div class="loader" id="loader"></div>
+            </form>
+
+            {% if error %}
+                <p class="error"><strong>Lỗi:</strong> {{ error }}</p>
+            {% endif %}
+
+            {% if prediction %}
+                <div class="result">
+                    <h2>Kết quả dự đoán giống chó trong ảnh: <strong>{{ prediction }}</strong></h2>
+                    {% if image_url %}
+                        <img src="{{ image_url }}" alt="Ảnh đã tải lên">
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p class="tech-stack">
+                Nguồn dữ liệu từ <a href="https://www.kaggle.com/datasets/jessicali9530/stanford-dogs-dataset" target="_blank">Stanford Dogs Dataset</a> | Xây dựng với <strong>PyTorch</strong> & <strong>Flask</strong>
+            </p>
+            <div class="members">
+                <strong>Thành viên:</strong> Phùng Tuấn Đạt | Trương Đức Anh | Trần Xuân Đức
+            </div>
+            <p class="copyright">
+                <a href="https://github.com/minoinoue/Dog-classifi-app" target="_blank">Dự án trên GitHub</a> | © 2025 Nhóm 8 - Đồ án chuyên ngành
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const backgroundSlideshow = document.getElementById('background-slideshow');
+
+        // --- DANH SÁCH ẢNH NỀN MỚI ---
+        const backgroundImages = [
+            'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1544568100-847a948585b9?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1597633611387-1c2c11b3b19a?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1530041539828-114de6694a9a?q=80&w=2787&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1455103493433-8a30e4708c43?q=80&w=2948&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1555510291-73b22b01a20b?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1519098901909-b1553a1410af?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1556909115-394a53a29c41?q=80&w=2832&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1553881651-433454a72d45?q=80&w=2823&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1562310803-a110a173873a?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1585250003309-694ff86902c3?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1516575150275-5aa32a261a27?q=80&w=2952&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1568393691622-c7f258758b2d?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1559440616-43b92532556b?q=80&w=2874&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1622326190924-6bde16b5a329?q=80&w=2874&auto=format&fit=crop',
+            // Ảnh thay thế
+            'https://images.unsplash.com/photo-1524672355452-92c1af295715?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1579210996381-8b9a43a602b1?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1593134257782-e895c7c79618?q=80&w=2940&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1549483369-4f353a9335e3?q=80&w=2940&auto=format&fit=crop'
+        ];
+
+        let currentImageIndex = 0;
+
+        function changeBackgroundImage() {
+            const newImage = new Image();
+            newImage.src = backgroundImages[currentImageIndex];
+            newImage.onload = () => {
+                backgroundSlideshow.style.backgroundImage = `url(${newImage.src})`;
+            };
+            currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+        }
+
+        changeBackgroundImage();
+        setInterval(changeBackgroundImage, 15000);
+
+        const fileUpload = document.getElementById('file-upload');
+        const fileNameSpan = document.getElementById('file-name');
+        const imagePreviewDiv = document.getElementById('image-preview');
+        const uploadForm = document.getElementById('upload-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const loader = document.getElementById('loader');
+
+        fileUpload.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const fileName = this.files[0].name;
+                fileNameSpan.textContent = fileName;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreviewDiv.innerHTML = `<img src="${e.target.result}" alt="Ảnh xem trước">`;
+                    imagePreviewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                fileNameSpan.textContent = 'Nhấn để chọn ảnh';
+                imagePreviewDiv.style.display = 'none';
+                imagePreviewDiv.innerHTML = '';
+            }
+        });
+
+        uploadForm.addEventListener('submit', function() {
+            if (fileUpload.files.length > 0) {
+                submitBtn.style.display = 'none';
+                loader.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
