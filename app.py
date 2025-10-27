@@ -6,8 +6,6 @@ import torchvision.transforms as transforms
 from werkzeug.utils import secure_filename
 import numpy as np
 
-# Thêm dòng này để import mô hình YOLOv5
-# Lưu ý: Lần đầu chạy, PyTorch sẽ tự động tải mô hình từ internet
 try:
     yolo_model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 except Exception as e:
@@ -25,7 +23,6 @@ with open("class_names.txt", "r") as f:
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Tải mô hình phân loại giống chó của bạn
 model_classifier = get_model(len(class_names))
 model_classifier.load_state_dict(torch.load("best_resnet50_dogs.pth", map_location=device))
 model_classifier.to(device)
